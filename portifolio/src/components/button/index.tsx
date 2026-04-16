@@ -1,8 +1,10 @@
 import { Container } from "./styles";
 import { IButton } from "./types";
 
-export const Button = ({title}: IButton) => {
+
+
+export const Button = ({title, onClick}: IButton) => {
   return (
-    <Container>{title}</Container>
+    <Container onClick={onClick}>{title}</Container>
   ); 
 };
