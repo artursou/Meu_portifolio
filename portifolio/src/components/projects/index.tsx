@@ -8,9 +8,9 @@ export const MainProjects = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // 1. Puxamos o "t" para os textos fixos e o "i18n" para saber o idioma atual
+  // Puxamos o "t" para os textos fixos e o "i18n" para saber o idioma atual
   const { t, i18n } = useTranslation();
-  const currentLang = i18n.language; // Vai ser "pt" ou "en"
+  const currentLang = i18n.language;
 
   useEffect(() => {
     const fetchAbout = async () => {
@@ -25,7 +25,8 @@ export const MainProjects = () => {
               logo_url
             )
           )
-        `);
+        `)
+        .eq("main", true); // <--- ALTERAÇÃO 1: Filtra apenas os projetos onde main é true
 
       console.log("DATA:", data);
       console.log("ERROR:", error);
@@ -46,28 +47,27 @@ export const MainProjects = () => {
   return (
     <Container>
       <Collumn>
-        {/* 2. Tradução do Título (com a lógica de loading) */}
+        {/* Tradução do Título (com a lógica de loading) */}
         <Title>{loading ? t("main_projects_loading") : t("main_projects_title")}</Title>
         <Row>
           {!loading && data.length === 0 ? (
-            // 3. Tradução do texto de array vazio
+            // Tradução do texto de array vazio
             <p>{t("main_projects_empty")}</p>
           ) : (
             data.map((item) => (
-              <Projects key={item.id}>
-                {/* DICA DE BANCO DE DADOS: 
-                  Se você alterar o Supabase para guardar os textos em JSON 
-                  (ex: { "pt": "Meu Projeto", "en": "My Project" }), 
-                  você usará: {item.title[currentLang]} 
-                */}
+              <Projects key={item.id}> 
+                
+                {/* Se o title também virar JSONB no futuro, basta usar {item.title[currentLang]} */}
                 <ProjectsTitle>{item.title}</ProjectsTitle>
                 
                 {item.cover_url && (
                   <ProjectsImg src={item.cover_url} alt={item.title} />
                 )}
                 
-                {/* Mesma regra do title se aplica a description */}
-                <ProjectsText>{item.description}</ProjectsText>
+                {/* ALTERAÇÃO 2: Renderiza a descrição com base no idioma atual do i18n */}
+                <ProjectsText>
+                  {item.description ? item.description[currentLang] : ""}
+                </ProjectsText>
                 
                 <TechContainer>
                   {item.project_technologies && item.project_technologies.map((pt: any) => {

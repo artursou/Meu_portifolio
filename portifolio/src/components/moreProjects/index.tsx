@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase"; // Ajuste o caminho se necessário
 import { CarouselSection, CarouselTitle, ViewAllButton, SlideImage } from "./styles";
 import { useTranslation } from "react-i18next"; // 1. Importando o hook
-
-// Importações cruciais do Swiper
+import Link from 'next/link';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 
@@ -79,7 +78,9 @@ export const MoreProjects = () => {
         </Swiper>
       </div>
 
-      <ViewAllButton>{t("more_projects_btn")}</ViewAllButton>
+      <Link href="/projects" style={{ textDecoration: 'none' }}>
+        <ViewAllButton>{t("more_projects_btn")}</ViewAllButton>
+      </Link>
     </CarouselSection>
   );
 };

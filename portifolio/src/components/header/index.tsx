@@ -20,7 +20,6 @@ export const Header = () => {
       <Row>
         <TextGroup>
           <Collumn>
-            {/* 3. Troque os textos fixos por t('chave') */}
             <Title>{t("title")}</Title>
             <Row>
               <Button title={t("btn_about")} onClick={() => scrollToSection("sobre")} />
@@ -31,7 +30,6 @@ export const Header = () => {
         <Img_Profile src="/eu.svg" alt="imagem"/>
         <Collumn>
           <TopRight>
-            {/* 4. Adicione o evento de clique nas bandeiras */}
             <img 
               src="/iconBr.svg" 
               alt="Brasil" 

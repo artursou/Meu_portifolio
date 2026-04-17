@@ -26,10 +26,11 @@ const resources = {
       "skills_title": "Skills & Competências",
       "skills_empty": "Nenhum dado encontrado.",
 
-      // --- Textos de Contato ---
       "contacts_title": "Contatos",
       "contacts_email": "E-mail: artursousantos@gmail.com",
-      "contacts_phone": "Telefone: (63) 99201-5605"
+      "contacts_phone": "Telefone: (63) 99201-5605",
+
+      "all_projects": "Projetos"
     }
   },
   en: {
@@ -57,7 +58,9 @@ const resources = {
       // --- Textos de Contato ---
       "contacts_title": "Contacts",
       "contacts_email": "E-mail: artursousantos@gmail.com",
-      "contacts_phone": "Phone: +55 (63) 99201-5605" // Formato internacional
+      "contacts_phone": "Phone: +55 (63) 99201-5605",
+
+      "all_projects": "Projects"
     }
   }
 };
