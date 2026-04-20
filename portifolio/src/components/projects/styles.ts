@@ -5,7 +5,7 @@ export const Container = styled.header`
   justify-content: center;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     padding: 40px 0; /* Dá um respiro no topo e na base no celular */
   }
 `;
@@ -18,7 +18,7 @@ export const Row = styled.div`
   margin: 0px;
 
   /* 👇 Só afeta o celular: empilha os projetos */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: column;
     gap: 60px; /* Dá um espaço maior entre um projeto e outro */
   }
@@ -29,7 +29,7 @@ export const Collumn = styled.div`
   flex-direction: column;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 100%; /* Garante que ocupe todo o espaço disponível */
   }
 `;
@@ -39,7 +39,7 @@ export const Title = styled.h1`
   margin: 20px 0;
   align-items: center; /* Corrigido de align-itens */
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 32px;
     text-align: center;
   }
@@ -50,7 +50,7 @@ export const Projects = styled.div`
   margin: 0 30px;
 
   /* 👇 No celular, o projeto ocupa a largura toda e remove as margens gigantes */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 100%;
     margin: 0;
     padding: 0 20px;
@@ -62,7 +62,7 @@ export const ProjectsTitle = styled.h1`
   font-size: 30px;
   text-align: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 26px;
   }
 `;
@@ -72,7 +72,7 @@ export const ProjectsText = styled.p`
   margin: 10px 50px;
 
   /* 👇 Reduz as margens laterais no celular para o texto não ficar espremido */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     margin: 10px 10px;
   }
 `;

@@ -19,7 +19,7 @@ export const CentralTextWrapper = styled.div`
   color: white;
   z-index: 2; /* Garante que o texto fique por cima dos ícones, caso se cruzem */
   
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 100%;
     padding: 0 10px;
   }
@@ -43,7 +43,7 @@ export const FloatingIcon = styled.img<IconProps>`
   right: ${props => props.$right || 'auto'};
 
   /* 👇 Responsividade dos Ícones 👇 */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 45px; /* Diminui o tamanho dos ícones */
     opacity: 0.2; /* Deixa transparente para não atrapalhar a leitura do texto */
   }
@@ -55,7 +55,7 @@ export const Title = styled.h1`
   align-items: center; /* Corrigido de align-itens para align-items */
 
   /* 👇 Responsividade do Título 👇 */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 32px;
   }
 `;
@@ -65,7 +65,7 @@ export const TextAboutMe = styled.p`
   line-height: 1.5; /* Adicionado para melhorar a leitura */
 
   /* 👇 Responsividade do Texto 👇 */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 18px; /* Fonte menor para telas pequenas */
   }
 `;

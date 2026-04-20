@@ -12,13 +12,13 @@ export const CarouselSection = styled.section`
   .swiper-slide {
     width: 600px; /* Mantém os 600px no computador */
     
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       width: 85%; /* No celular, o slide ocupa quase a tela toda, deixando uma pontinha do próximo slide visível */
     }
   }
 
   /* Ajusta os botões de navegação (setas) do Swiper no celular, pois costumam sobrepor a imagem */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .swiper-button-next, .swiper-button-prev {
       display: none; /* Esconde as setinhas no celular, o usuário pode apenas arrastar com o dedo */
     }
@@ -34,7 +34,7 @@ export const CarouselTitle = styled.h2`
   font-family: monospace;
 
   /* 👇 Responsividade do Título */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 1.8rem;
     margin-bottom: 20px;
   }
@@ -48,7 +48,7 @@ export const SlideImage = styled.img`
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
 
   /* 👇 Diminui a altura da imagem no celular para não ocupar a tela toda verticalmente */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     height: 250px;
   }
 `;
@@ -96,7 +96,7 @@ export const ViewAllButton = styled.button`
   }
 
   /* 👇 No celular, o botão fica um pouco mais compacto */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 12px;
     padding: 0.8em 1.5em;
     letter-spacing: 2px;

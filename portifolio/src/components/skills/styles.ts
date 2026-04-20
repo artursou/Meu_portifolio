@@ -6,7 +6,7 @@ export const Container = styled.header`
   align-items: center;
   padding: 40px 20px; /* Adicionado um respiro geral na seção */
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     padding: 30px 15px;
   }
 `;
@@ -18,7 +18,7 @@ export const Row = styled.div`
   gap: 45px;
   margin: 0px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: column;
     gap: 20px;
   }
@@ -37,7 +37,7 @@ export const Title = styled.h1`
   align-items: center; /* Corrigido de align-itens */
   text-align: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 32px;
   }
 `;
@@ -51,7 +51,7 @@ export const TechContainer = styled.div`
   flex-wrap: wrap; /* Isso já ajuda muito, ele quebra a linha sozinho! */
 
   /* 👇 No celular, diminuímos o espaço entre os ícones para caberem mais por linha */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     gap: 25px; 
   }
 `;
@@ -63,7 +63,7 @@ export const TechItem = styled.div`
   gap: 4px;
   margin: 5px 0 20px 0;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     margin: 0px 0 10px 0; /* Diminui a margem inferior para o grid ficar mais compacto */
   }
 `;
@@ -72,7 +72,7 @@ export const ProjectsIcon = styled.img`
   width: 100px;
 
   /* 👇 Ícones menores no celular para o layout ficar harmonioso */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 60px; 
   }
 `;
