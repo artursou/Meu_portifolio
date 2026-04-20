@@ -32,9 +32,7 @@ export const Img_Profile = styled.img`
   margin-left: 100px; /* Seu original */
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    width: 180px; /* Foto menor e controlada no celular */
-    order: -1; /* Joga a foto para cima do texto no celular, se preferir */
+    display: none;
   }
 `;
 
