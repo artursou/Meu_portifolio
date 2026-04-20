@@ -15,11 +15,10 @@ export const Row = styled.div`
   gap: 45px;
   margin: 0px;
 
-  /* Só muda no celular */
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 20px;
-    padding: 100px 20px 40px; /* Espaço para não bater nas bandeiras */
+    padding-top: 60px; /* Espaço para as bandeiras não cobrirem o texto */
   }
 `;
 
@@ -30,11 +29,12 @@ export const Collumn = styled.div`
 `;
 
 export const Img_Profile = styled.img`
-  margin-left: 100px;
+  margin-left: 100px; /* Seu original */
 
   @media (max-width: 768px) {
     margin-left: 0;
-    max-width: 200px; /* Diminui a foto no celular */
+    width: 180px; /* Foto menor e controlada no celular */
+    order: -1; /* Joga a foto para cima do texto no celular, se preferir */
   }
 `;
 
@@ -56,7 +56,7 @@ export const BottomRight = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    position: relative; /* No celular ele flutua junto com o conteúdo */
+    position: relative;
     right: auto;
     bottom: auto;
     margin-top: 20px;
@@ -65,20 +65,24 @@ export const BottomRight = styled.div`
 
 export const Title = styled.h1`
   font-size: 40px;
-  width: 900px; /* Mantido seu original */
-  height: 200px; /* Mantido seu original */
+  width: 900px; /* Seu original */
+  height: 200px; /* Seu original */
   text-align: center;
 
   @media (max-width: 768px) {
-    width: 100%; /* No celular ocupa a tela toda */
+    width: 100%; 
     height: auto;
-    font-size: 28px;
-    padding: 0 10px;
+    font-size: 26px;
+    padding: 0 15px;
   }
 `;
 
 export const TextGroup = styled.div`
-  margin-left: 200px; /* Mantido seu original */
+  margin-left: 200px; /* Seu original intocado no PC */
+
+  @media (max-width: 1024px) {
+    margin-left: 50px; /* Ajuste para tablets/laptops pequenos */
+  }
 
   @media (max-width: 768px) {
     margin-left: 0; /* Centraliza no celular */
