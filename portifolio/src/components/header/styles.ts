@@ -15,7 +15,7 @@ export const Row = styled.div`
   gap: 45px;
   margin: 0px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: column;
     gap: 20px;
     padding-top: 60px; /* Espaço para as bandeiras não cobrirem o texto */
@@ -31,7 +31,7 @@ export const Collumn = styled.div`
 export const Img_Profile = styled.img`
   margin-left: 100px; /* Seu original */
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     display: none;
   }
 `;
@@ -53,7 +53,7 @@ export const BottomRight = styled.div`
   gap: 12px;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     position: relative;
     right: auto;
     bottom: auto;
@@ -67,7 +67,7 @@ export const Title = styled.h1`
   height: 200px; /* Seu original */
   text-align: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 100%; 
     height: auto;
     font-size: 26px;
@@ -82,7 +82,7 @@ export const TextGroup = styled.div`
     margin-left: 50px; /* Ajuste para tablets/laptops pequenos */
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     margin-left: 0; /* Centraliza no celular */
   }
 `;
