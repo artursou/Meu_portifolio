@@ -71,7 +71,7 @@ export const MoreProjects = () => {
           className="mySwiper"
         >
           {projects.map((project) => (
-            <SwiperSlide key={project.id} style={{ width: "600px" }}>
+            <SwiperSlide key={project.id}> 
               <SlideImage src={project.cover_url} alt={project.title} />
             </SwiperSlide>
           ))}
