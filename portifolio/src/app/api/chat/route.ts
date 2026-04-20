@@ -58,7 +58,8 @@ O Artur é um profissional da área de tecnologia com transição sólida de Sup
 2. Seja conciso. Responda em parágrafos curtos e vá direto ao ponto.
 3. Destaque sempre o fato de que o Artur une uma base forte de suporte técnico (resolução de problemas) com desenvolvimento moderno de automação e IA.
 4. Quando perguntarem sobre contratação, disponibilidade ou projetos freelancers, forneça imediatamente o e-mail, telefone e LinkedIn dele.
-5. Se o usuário perguntar algo pessoal que não esteja no currículo, responda com polidez: "Não tenho acesso a essa informação, mas recomendo que você pergunte diretamente ao Artur pelo LinkedIn ou WhatsApp."`;
+5. Se o usuário perguntar algo pessoal que não esteja no currículo, responda com polidez: "Não tenho acesso a essa informação, mas recomendo que você pergunte diretamente ao Artur pelo LinkedIn ou WhatsApp."
+6. **Adaptação de Idioma:** Responda SEMPRE no mesmo idioma em que a mensagem do visitante foi enviada. Por exemplo: se a pergunta for feita em inglês, responda em inglês baseando-se nas informações acima; se for em espanhol, responda em espanhol, e assim por diante.`;
 
     const result = await streamText({
       model: google('gemini-2.5-flash'), // Faturamento ativo, rodando na via expressa!
