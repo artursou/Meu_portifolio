@@ -69,7 +69,7 @@ export const AdminPage = () => {
   };
 
   const fetchProjects = async () => {
-    const { data, error } = await supabase.from("projects").select("id, title, main, description");
+    const { data, error } = await supabase.from("projects").select("id, title, main, description, cover_url, project_url");
     if (!error && data) setProjectsList(data);
   };
 
