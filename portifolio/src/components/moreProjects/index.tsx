@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase"; // Ajuste o caminho se necessário
+import type { Project } from "@/types";
 import { CarouselSection, CarouselTitle, ViewAllButton, SlideImage } from "./styles";
 import { useTranslation } from "react-i18next"; // 1. Importando o hook
 import Link from 'next/link';
@@ -13,8 +14,10 @@ import "swiper/css/effect-coverflow";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+type CarouselProject = Pick<Project, "id" | "title" | "cover_url">;
+
 export const MoreProjects = () => {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<CarouselProject[]>([]);
   const [loading, setLoading] = useState(true);
   
   // 2. Chamando o hook AQUI DENTRO, antes do useEffect!
@@ -72,7 +75,7 @@ export const MoreProjects = () => {
         >
           {projects.map((project) => (
             <SwiperSlide key={project.id}> 
-              <SlideImage src={project.cover_url} alt={project.title} />
+              <SlideImage src={project.cover_url ?? ""} alt={project.title} />
             </SwiperSlide>
           ))}
         </Swiper>

@@ -30,7 +30,16 @@ const resources = {
       "contacts_email": "E-mail: artursousantos@gmail.com",
       "contacts_phone": "Telefone: (63) 99201-5605",
 
-      "all_projects": "Projetos"
+      "all_projects": "Projetos",
+      "project_link": "Ver projeto",
+
+      "chat_welcome": "Olá! Pergunte algo sobre as experiências profissionais e projetos do Artur.",
+      "chat_typing": "Digitando...",
+      "chat_placeholder": "Digite sua mensagem...",
+      "chat_limit": "Limite atingido.",
+      "chat_send": "Enviar",
+      "chat_error": "Desculpe, ocorreu um erro de conexão.",
+      "chat_rate_limited": "Muitas mensagens em pouco tempo. Tente novamente mais tarde."
     }
   },
   en: {
@@ -60,7 +69,16 @@ const resources = {
       "contacts_email": "E-mail: artursousantos@gmail.com",
       "contacts_phone": "Phone: +55 (63) 99201-5605",
 
-      "all_projects": "Projects"
+      "all_projects": "Projects",
+      "project_link": "View project",
+
+      "chat_welcome": "Hi! Ask anything about Artur's professional experience and projects.",
+      "chat_typing": "Typing...",
+      "chat_placeholder": "Type your message...",
+      "chat_limit": "Limit reached.",
+      "chat_send": "Send",
+      "chat_error": "Sorry, a connection error occurred.",
+      "chat_rate_limited": "Too many messages in a short time. Please try again later."
     }
   }
 };
@@ -72,6 +90,8 @@ i18n
     resources,
     // lng: "pt", <--- IMPORTANTE: Apague ou comente essa linha!
     fallbackLng: "pt", // Idioma de segurança caso dê erro ou não ache nada
+    supportedLngs: ["pt", "en"],
+    load: "languageOnly", // "pt-BR" vira "pt", "en-US" vira "en"
     interpolation: {
       escapeValue: false 
     }

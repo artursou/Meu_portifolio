@@ -1,19 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 import '@/i18n';
 import { AllProjects } from "@/components/allProjects";
+import { useIsClient } from "@/hooks/useIsClient";
 
 export default function Home() {
-  const [isMounted, setIsMounted] = useState(false);
+  const isClient = useIsClient();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null; 
+  if (!isClient) {
+    return null;
   }
 
   return (

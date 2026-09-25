@@ -1,26 +1,51 @@
 import { streamText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY || '',
 });
 
 const MAX_MESSAGES_PER_CHAT = 10;
+const MAX_CHARS_PER_MESSAGE = 1000;
+const MAX_REQUESTS_PER_IP = 20;          // requisições...
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // ...por hora
+
+type IncomingMessage = { role: 'user' | 'assistant'; content: string };
+
+const isValidMessage = (m: unknown): m is IncomingMessage => {
+  if (typeof m !== 'object' || m === null) return false;
+  const { role, content } = m as Record<string, unknown>;
+  return (
+    (role === 'user' || role === 'assistant') &&
+    typeof content === 'string' &&
+    content.length > 0 &&
+    content.length <= MAX_CHARS_PER_MESSAGE
+  );
+};
 
 export async function POST(req: Request) {
   try {
+    if (!rateLimit(getClientIp(req), MAX_REQUESTS_PER_IP, RATE_LIMIT_WINDOW_MS)) {
+      return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429 });
+    }
+
     const body = await req.json();
-    const rawMessages = body.messages || [];
+    const rawMessages: unknown = body?.messages;
+
+    if (!Array.isArray(rawMessages) || rawMessages.length === 0 || rawMessages.length > MAX_MESSAGES_PER_CHAT) {
+      return new Response(JSON.stringify({ error: 'limit' }), { status: 429 });
+    }
+
+    if (!rawMessages.every(isValidMessage)) {
+      return new Response(JSON.stringify({ error: 'invalid_messages' }), { status: 400 });
+    }
 
     // Limpa a formatação para o Gemini entender perfeitamente
-    const formattedMessages = rawMessages.map((m: any) => ({
+    const formattedMessages = rawMessages.map((m) => ({
       role: m.role,
       content: m.content
     }));
-
-    if (formattedMessages.length > MAX_MESSAGES_PER_CHAT) {
-      return new Response(JSON.stringify({ error: 'Limite.' }), { status: 429 });
-    }
 
     const systemPrompt = `Você é um assistente virtual e representante oficial do portfólio de Artur Souza Santos. Seu objetivo é responder perguntas de recrutadores, clientes e visitantes sobre a carreira, habilidades e experiências do Artur, sempre de forma profissional, educada, objetiva e entusiasmada.
 
@@ -65,6 +90,7 @@ O Artur é um profissional da área de tecnologia com transição sólida de Sup
       model: google('gemini-2.5-flash'), // Faturamento ativo, rodando na via expressa!
       messages: formattedMessages,
       system: systemPrompt,
+      maxOutputTokens: 800, // Limita o tamanho (e o custo) de cada resposta
     });
 
     // 🟢 O SEGREDO: Enviamos um streaming de TEXTO PURO, sem as formatações da Vercel

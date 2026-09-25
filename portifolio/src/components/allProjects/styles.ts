@@ -143,6 +143,16 @@ export const ProjectsText = styled.p`
   }
 `;
 
+export const ProjectsLink = styled.a`
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 export const TechContainer = styled.div`
   display: flex;
   gap: 30px;

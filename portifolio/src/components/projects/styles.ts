@@ -77,6 +77,17 @@ export const ProjectsText = styled.p`
   }
 `;
 
+export const ProjectsLink = styled.a`
+  color: inherit;
+  font-weight: bold;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 export const ProjectsImg = styled.img`
   width: 800px;
   display: block;

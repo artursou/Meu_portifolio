@@ -1,11 +1,12 @@
 "use client";
 import { supabase } from "@/lib/supabase";
-import { Row, TechContainer, TechItem, ProjectsIcon, Container, Title, Collumn } from "./styles";
+import { TechContainer, TechItem, ProjectsIcon, Container, Title, Collumn } from "./styles";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next"; // 1. Importe o hook
+import type { Technology } from "@/types";
 
 export const Skills = () => {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Technology[]>([]);
   const [loading, setLoading] = useState(true);
   
   // 2. Chame o hook
@@ -18,7 +19,7 @@ export const Skills = () => {
         .select(`*`);
 
       if (error) {
-        console.log(error.message);
+        console.error("Erro ao buscar tecnologias:", error.message);
         setLoading(false);
         return;
       }

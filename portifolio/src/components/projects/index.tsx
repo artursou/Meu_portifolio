@@ -1,16 +1,17 @@
 "use client";
-import { Container, Collumn, Title, Row, Projects, ProjectsTitle, ProjectsText, ProjectsImg, ProjectsIcon, TechContainer, TechItem } from "./styles";
+import { Container, Collumn, Title, Row, Projects, ProjectsTitle, ProjectsText, ProjectsImg, ProjectsIcon, ProjectsLink, TechContainer, TechItem } from "./styles";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getLocalized } from "@/lib/localize";
+import type { ProjectWithTechs } from "@/types";
 import { useTranslation } from "react-i18next";
 
 export const MainProjects = () => {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<ProjectWithTechs[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Puxamos o "t" para os textos fixos e o "i18n" para saber o idioma atual
   const { t, i18n } = useTranslation();
-  const currentLang = i18n.language;
 
   useEffect(() => {
     const fetchAbout = async () => {
@@ -26,18 +27,15 @@ export const MainProjects = () => {
             )
           )
         `)
-        .eq("main", true); // <--- ALTERAÇÃO 1: Filtra apenas os projetos onde main é true
-
-      console.log("DATA:", data);
-      console.log("ERROR:", error);
+        .eq("main", true); // Filtra apenas os projetos onde main é true
 
       if (error) {
-        console.log(error.message);
+        console.error("Erro ao buscar projetos principais:", error.message);
         setLoading(false);
         return;
       }
 
-      setData(data || []);
+      setData((data as ProjectWithTechs[]) || []);
       setLoading(false);
     };
 
@@ -64,13 +62,13 @@ export const MainProjects = () => {
                   <ProjectsImg src={item.cover_url} alt={item.title} />
                 )}
                 
-                {/* ALTERAÇÃO 2: Renderiza a descrição com base no idioma atual do i18n */}
+                {/* Renderiza a descrição com base no idioma atual do i18n */}
                 <ProjectsText>
-                  {item.description ? item.description[currentLang] : ""}
+                  {getLocalized(item.description, i18n.language)}
                 </ProjectsText>
-                
+
                 <TechContainer>
-                  {item.project_technologies && item.project_technologies.map((pt: any) => {
+                  {item.project_technologies && item.project_technologies.map((pt) => {
                     const tech = pt.technologies;
                     if (!tech) return null;
 
@@ -83,7 +81,13 @@ export const MainProjects = () => {
                     );
                   })}
                 </TechContainer>
-                <ProjectsText>{item.project_url}</ProjectsText>
+                {item.project_url && (
+                  <ProjectsText>
+                    <ProjectsLink href={item.project_url} target="_blank" rel="noopener noreferrer">
+                      {t("project_link")} ↗
+                    </ProjectsLink>
+                  </ProjectsText>
+                )}
               </Projects>
             ))
           )}

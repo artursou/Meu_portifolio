@@ -13,19 +13,21 @@ import {
   ProjectLeft,
   ProjectRight,
   ProjectsIcon, 
-  ProjectsImg, 
-  ProjectsText, 
-  ProjectsTitle, 
-  TechContainer, 
-  TechItem 
+  ProjectsImg,
+  ProjectsLink,
+  ProjectsText,
+  ProjectsTitle,
+  TechContainer,
+  TechItem
 } from './styles';
 import Link from 'next/link';
+import { getLocalized } from '@/lib/localize';
+import type { ProjectWithTechs } from '@/types';
 
 export const AllProjects = () => {
   const { t, i18n } = useTranslation();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<ProjectWithTechs[]>([]);
   const [loading, setLoading] = useState(true);
-  const currentLang = i18n.language?.substring(0, 2) || "pt";
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -48,7 +50,7 @@ export const AllProjects = () => {
         return;
       }
 
-      setData(data || []);
+      setData((data as ProjectWithTechs[]) || []);
       setLoading(false);
     };
 
@@ -93,22 +95,23 @@ export const AllProjects = () => {
                 {item.cover_url && (
                   <ProjectsImg src={item.cover_url} alt={item.title} />
                 )}
-                <ProjectsText>Link: {item.project_url}</ProjectsText>
+                {item.project_url && (
+                  <ProjectsText>
+                    <ProjectsLink href={item.project_url} target="_blank" rel="noopener noreferrer">
+                      {t("project_link")} ↗
+                    </ProjectsLink>
+                  </ProjectsText>
+                )}
               </ProjectLeft>
 
               {/* LADO DIREITO: Descrição e Tecnologias */}
               <ProjectRight>
                 <ProjectsText className="description">
-                  {/* Versão blindada contra strings e erros de idioma */}
-                  {item.description
-                    ? typeof item.description === "string"
-                      ? JSON.parse(item.description)[currentLang] || "Descrição não encontrada para este idioma."
-                      : item.description[currentLang] || "Descrição não encontrada para este idioma."
-                    : ""}
+                  {getLocalized(item.description, i18n.language)}
                 </ProjectsText>
-                
+
                 <TechContainer>
-                  {item.project_technologies && item.project_technologies.map((pt: any) => {
+                  {item.project_technologies && item.project_technologies.map((pt) => {
                     const tech = pt.technologies;
                     if (!tech) return null;
 

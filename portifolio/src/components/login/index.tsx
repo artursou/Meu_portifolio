@@ -39,7 +39,7 @@ export default function LoginPage() {
     setError(null);
 
     // Chama a função de autenticação do Supabase [cite: 240]
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });

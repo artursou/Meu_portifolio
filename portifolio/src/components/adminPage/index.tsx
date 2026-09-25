@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { parseLocalized } from "@/lib/localize";
+import type { Project, Technology } from "@/types";
 import {
   Container,
   Header,
@@ -34,8 +36,9 @@ export const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("addProject");
 
   // Dados do Banco
-  const [techList, setTechList] = useState<any[]>([]);
-  const [projectsList, setProjectsList] = useState<any[]>([]);
+  const [techList, setTechList] = useState<Pick<Technology, "id" | "name" | "category">[]>([]);
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
+  const [saving, setSaving] = useState(false);
 
   // Estados Formulário Projeto
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -56,6 +59,7 @@ export const AdminPage = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 1. Carregar Dados Iniciais
   useEffect(() => {
@@ -65,12 +69,14 @@ export const AdminPage = () => {
 
   const fetchTechnologies = async () => {
     const { data, error } = await supabase.from("technologies").select("id, name, category");
-    if (!error && data) setTechList(data);
+    if (error) setErrorMessage(`Erro ao carregar tecnologias: ${error.message}`);
+    else if (data) setTechList(data);
   };
 
   const fetchProjects = async () => {
     const { data, error } = await supabase.from("projects").select("id, title, main, description, cover_url, project_url");
-    if (!error && data) setProjectsList(data);
+    if (error) setErrorMessage(`Erro ao carregar projetos: ${error.message}`);
+    else if (data) setProjectsList(data as Project[]);
   };
 
   // 2. Logout
@@ -89,51 +95,82 @@ export const AdminPage = () => {
   // 4. Salvar Projeto (Criação e Edição)
   const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
 
     const projectData = {
       title: projectTitle,
-      cover_url: projectImage,
-      project_url: projectLink,
+      cover_url: projectImage || null,
+      project_url: projectLink || null,
       main: isMainProject,
       description: { pt: projectDescPt, en: projectDescEn }, // Formato JSONB
     };
 
-    let currentProjectId = editingProjectId;
+    try {
+      let projectId: string;
+      let currentTechIds: string[] = [];
 
-    if (editingProjectId) {
-      // UPDATE
-      const { error } = await supabase.from("projects").update(projectData).eq("id", editingProjectId);
-      if (error) { console.error(error); return; }
+      if (editingProjectId) {
+        // UPDATE
+        const { error } = await supabase.from("projects").update(projectData).eq("id", editingProjectId);
+        if (error) throw new Error(`Erro ao atualizar o projeto: ${error.message}`);
+        projectId = editingProjectId;
 
-      // Limpar tecnologias antigas
-      await supabase.from("project_technologies").delete().eq("project_id", editingProjectId);
-    } else {
-      // INSERT
-      const { data, error } = await supabase.from("projects").insert([projectData]).select("id").single();
-      if (error) { console.error(error); return; }
-      currentProjectId = data.id;
+        // Busca as tecnologias que já estão vinculadas
+        const { data, error: linksError } = await supabase
+          .from("project_technologies")
+          .select("technology_id")
+          .eq("project_id", projectId);
+        if (linksError) throw new Error(`Erro ao ler tecnologias do projeto: ${linksError.message}`);
+        currentTechIds = (data || []).map((pt) => pt.technology_id);
+      } else {
+        // INSERT
+        const { data, error } = await supabase.from("projects").insert([projectData]).select("id").single();
+        if (error) throw new Error(`Erro ao cadastrar o projeto: ${error.message}`);
+        projectId = data.id;
+      }
+
+      // Tabela N:N — só mexe no que mudou, assim uma falha não apaga os vínculos existentes
+      const toRemove = currentTechIds.filter((id) => !selectedTechs.includes(id));
+      const toAdd = selectedTechs.filter((id) => !currentTechIds.includes(id));
+
+      if (toAdd.length > 0) {
+        const { error } = await supabase
+          .from("project_technologies")
+          .insert(toAdd.map((techId) => ({ project_id: projectId, technology_id: techId })));
+        if (error) throw new Error(`Projeto salvo, mas houve erro ao vincular tecnologias: ${error.message}`);
+      }
+
+      if (toRemove.length > 0) {
+        const { error } = await supabase
+          .from("project_technologies")
+          .delete()
+          .eq("project_id", projectId)
+          .in("technology_id", toRemove);
+        if (error) throw new Error(`Projeto salvo, mas houve erro ao desvincular tecnologias: ${error.message}`);
+      }
+
+      resetProjectForm();
+      setShowSuccessPopup(true);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(err instanceof Error ? err.message : "Erro inesperado ao salvar o projeto.");
+    } finally {
+      fetchProjects();
+      setSaving(false);
     }
-
-    // Inserir Novas Tecnologias Relacionadas (Tabela N:N)
-    if (currentProjectId && selectedTechs.length > 0) {
-      const techInserts = selectedTechs.map((techId) => ({
-        project_id: currentProjectId,
-        technology_id: techId,
-      }));
-      await supabase.from("project_technologies").insert(techInserts);
-    }
-
-    resetProjectForm();
-    fetchProjects();
-    setShowSuccessPopup(true);
   };
 
   // 5. Salvar Tecnologia
   const handleAddTechnology = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+
     const { error } = await supabase.from("technologies").insert([
-      { name: techName, logo_url: techImage, category: techCategory }
+      { name: techName, logo_url: techImage || null, category: techCategory }
     ]);
+    setSaving(false);
 
     if (!error) {
       setTechName(""); setTechImage(""); setTechCategory("Front-end");
@@ -141,27 +178,31 @@ export const AdminPage = () => {
       setShowSuccessPopup(true);
     } else {
       console.error(error);
+      setErrorMessage(`Erro ao cadastrar a tecnologia: ${error.message}`);
     }
   };
 
   // 6. Preparar Edição de Projeto
-  const handleEditClick = async (project: any) => {
+  const handleEditClick = async (project: Project) => {
+    // Buscar tecnologias vinculadas antes de abrir o formulário
+    const { data, error } = await supabase.from("project_technologies").select("technology_id").eq("project_id", project.id);
+    if (error) {
+      setErrorMessage(`Erro ao carregar tecnologias do projeto: ${error.message}`);
+      return;
+    }
+
     setEditingProjectId(project.id);
     setProjectTitle(project.title);
     setProjectImage(project.cover_url || "");
     setProjectLink(project.project_url || "");
     setIsMainProject(project.main || false);
-    
+
     // Desestruturar JSONB
-    if (project.description) {
-      setProjectDescPt(project.description.pt || "");
-      setProjectDescEn(project.description.en || "");
-    }
+    const description = parseLocalized(project.description);
+    setProjectDescPt(description.pt || "");
+    setProjectDescEn(description.en || "");
 
-    // Buscar tecnologias vinculadas
-    const { data } = await supabase.from("project_technologies").select("technology_id").eq("project_id", project.id);
-    if (data) setSelectedTechs(data.map((pt) => pt.technology_id));
-
+    setSelectedTechs((data || []).map((pt) => pt.technology_id));
     setActiveTab("addProject");
   };
 
@@ -174,6 +215,7 @@ export const AdminPage = () => {
         fetchProjects();
       } else {
         console.error(error);
+        setErrorMessage(`Erro ao excluir o projeto: ${error.message}`);
       }
     }
     setShowDeletePopup(false);
@@ -257,8 +299,8 @@ export const AdminPage = () => {
             </CheckboxLabel>
           </FormGroup>
 
-          <SubmitButton type="submit">
-            {editingProjectId ? "Salvar Alterações" : "Cadastrar Projeto"}
+          <SubmitButton type="submit" disabled={saving}>
+            {saving ? "Salvando..." : editingProjectId ? "Salvar Alterações" : "Cadastrar Projeto"}
           </SubmitButton>
           
           {editingProjectId && (
@@ -292,7 +334,9 @@ export const AdminPage = () => {
             </Select>
           </FormGroup>
 
-          <SubmitButton type="submit">Cadastrar Tecnologia</SubmitButton>
+          <SubmitButton type="submit" disabled={saving}>
+            {saving ? "Salvando..." : "Cadastrar Tecnologia"}
+          </SubmitButton>
         </Form>
       )}
 
@@ -325,6 +369,19 @@ export const AdminPage = () => {
             <p>A operação foi realizada e salva no banco de dados.</p>
             <ModalButtons>
               <ActionButton onClick={() => setShowSuccessPopup(false)}>Fechar</ActionButton>
+            </ModalButtons>
+          </ModalBox>
+        </ModalOverlay>
+      )}
+
+      {/* MODAL DE ERRO */}
+      {errorMessage && (
+        <ModalOverlay>
+          <ModalBox>
+            <h2>❌ Algo deu errado</h2>
+            <p>{errorMessage}</p>
+            <ModalButtons>
+              <ActionButton onClick={() => setErrorMessage(null)}>Fechar</ActionButton>
             </ModalButtons>
           </ModalBox>
         </ModalOverlay>
