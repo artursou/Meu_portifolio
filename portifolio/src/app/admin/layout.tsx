@@ -13,7 +13,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     let generation = 0;
     const checkAuth = async () => {
       const current = ++generation;
-      setAccess('checking');
       try {
         // Verify with Auth, then ask the database's authoritative allowlist.
         const { data: { user }, error } = await supabase.auth.getUser();
@@ -30,9 +29,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
     };
     void checkAuth();
+    // Re-check in the background on every auth event (sign-out, refresh, password
+    // change) without unmounting the panel; a denial still hides it immediately.
     // Schedule outside the Supabase auth callback to avoid its internal lock.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      setAccess('checking');
       queueMicrotask(() => { if (active) void checkAuth(); });
     });
     return () => { active = false; generation++; subscription.unsubscribe(); };

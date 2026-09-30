@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { parseLocalized } from "@/lib/localize";
 import type { Project, Technology } from "@/types";
 import { VisitsPanel } from "@/components/visitsPanel";
+import { AccountPanel } from "@/components/accountPanel";
 import {
   Container,
   Header,
@@ -250,7 +251,15 @@ export const AdminPage = () => {
         <Tab $active={activeTab === "visits"} onClick={() => setActiveTab("visits")}>
           📊 Visitas
         </Tab>
+        <Tab $active={activeTab === "account"} onClick={() => setActiveTab("account")}>
+          🔒 Minha conta
+        </Tab>
       </TabsContainer>
+
+      {/* ABA: MINHA CONTA */}
+      {activeTab === "account" && (
+        <AccountPanel onError={setErrorMessage} onSuccess={() => setShowSuccessPopup(true)} />
+      )}
 
       {/* ABA: VISITAS */}
       {activeTab === "visits" && <VisitsPanel onError={setErrorMessage} />}

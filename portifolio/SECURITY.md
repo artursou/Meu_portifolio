@@ -85,6 +85,9 @@ o search_path de update_updated_at_column. O acesso foi verificado antes e
 depois, sem mudança: leitura pública, escrita só do administrador.
 
 O site_url do Supabase Auth aponta para https://arturport.netlify.app.
+Senhas exigem no mínimo 8 caracteres com minúscula, maiúscula, número e símbolo
+(configuração do Supabase Auth, validada no servidor). A regra vale ao criar ou
+trocar a senha; a aba "Minha conta" do admin troca a senha após confirmar a atual.
 
 `next.config.ts` envia em todas as rotas: CSP com frame-ancestors 'none',
 base-uri, object-src e form-action restritos; X-Frame-Options DENY (contra
