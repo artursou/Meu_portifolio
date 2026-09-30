@@ -1,45 +1,49 @@
-// src/app/admin/layout.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [loading, setLoading] = useState(true);
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [access, setAccess] = useState<'checking' | 'allowed' | 'denied'>('checking');
   const router = useRouter();
 
   useEffect(() => {
+    let active = true;
+    let generation = 0;
     const checkAuth = async () => {
-      // Pede ao Supabase a sessão atual
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        // Se não tem sessão, redireciona para o login
-        router.push("/login");
-      } else {
-        // Se tem sessão, libera o acesso parando o loading
-        setLoading(false);
+      const current = ++generation;
+      setAccess('checking');
+      try {
+        // Verify with Auth, then ask the database's authoritative allowlist.
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (!active || current !== generation) return;
+        if (error || !user) {
+          setAccess('denied');
+          router.replace('/login');
+          return;
+        }
+        const { data, error: permissionError } = await supabase.rpc('is_portfolio_admin');
+        if (active && current === generation) setAccess(!permissionError && data === true ? 'allowed' : 'denied');
+      } catch {
+        if (active && current === generation) setAccess('denied');
       }
     };
-
-    checkAuth();
+    void checkAuth();
+    // Schedule outside the Supabase auth callback to avoid its internal lock.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      setAccess('checking');
+      queueMicrotask(() => { if (active) void checkAuth(); });
+    });
+    return () => { active = false; generation++; subscription.unsubscribe(); };
   }, [router]);
 
-  // Enquanto estiver verificando, mostra uma tela preta de loading
-  // (Isso evita que a página do admin "pisque" antes de redirecionar um invasor)
-  if (loading) {
+  if (access !== 'allowed') {
     return (
-      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', color: '#fff' }}>
-        <h2>Verificando credenciais...</h2>
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#000', color: '#fff' }}>
+        <h2>{access === 'checking' ? 'Verificando credenciais...' : 'Acesso restrito ao administrador.'}</h2>
       </div>
     );
   }
-
-  // Se passou do loading, renderiza a página do admin
   return <>{children}</>;
 }

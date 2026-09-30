@@ -27,4 +27,6 @@ export interface ChatMessage {
   id: number;
   role: "user" | "assistant";
   content: string;
+  // Mensagens geradas no cliente (erros, limite) não entram no histórico enviado à API
+  local?: boolean;
 }

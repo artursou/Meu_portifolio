@@ -1,51 +1,22 @@
 import { streamText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { rateLimit } from '@/lib/rateLimit';
+import { ChatRequestError, readChatMessages } from '@/lib/chatRequest';
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-});
-
-const MAX_MESSAGES_PER_CHAT = 10;
-const MAX_CHARS_PER_MESSAGE = 1000;
-const MAX_REQUESTS_PER_IP = 20;          // requisições...
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // ...por hora
-
-type IncomingMessage = { role: 'user' | 'assistant'; content: string };
-
-const isValidMessage = (m: unknown): m is IncomingMessage => {
-  if (typeof m !== 'object' || m === null) return false;
-  const { role, content } = m as Record<string, unknown>;
-  return (
-    (role === 'user' || role === 'assistant') &&
-    typeof content === 'string' &&
-    content.length > 0 &&
-    content.length <= MAX_CHARS_PER_MESSAGE
-  );
-};
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
-    if (!rateLimit(getClientIp(req), MAX_REQUESTS_PER_IP, RATE_LIMIT_WINDOW_MS)) {
-      return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429 });
+    const formattedMessages = await readChatMessages(req);
+    const limit = await rateLimit(req);
+    if (!limit.allowed) {
+      return Response.json({ error: 'rate_limited' }, {
+        status: 429, headers: { 'Retry-After': String(limit.retryAfter), 'Cache-Control': 'no-store' },
+      });
     }
-
-    const body = await req.json();
-    const rawMessages: unknown = body?.messages;
-
-    if (!Array.isArray(rawMessages) || rawMessages.length === 0 || rawMessages.length > MAX_MESSAGES_PER_CHAT) {
-      return new Response(JSON.stringify({ error: 'limit' }), { status: 429 });
-    }
-
-    if (!rawMessages.every(isValidMessage)) {
-      return new Response(JSON.stringify({ error: 'invalid_messages' }), { status: 400 });
-    }
-
-    // Limpa a formatação para o Gemini entender perfeitamente
-    const formattedMessages = rawMessages.map((m) => ({
-      role: m.role,
-      content: m.content
-    }));
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return Response.json({ error: 'chat_unavailable' }, { status: 503 });
+    const google = createGoogleGenerativeAI({ apiKey });
 
     const systemPrompt = `Você é um assistente virtual e representante oficial do portfólio de Artur Souza Santos. Seu objetivo é responder perguntas de recrutadores, clientes e visitantes sobre a carreira, habilidades e experiências do Artur, sempre de forma profissional, educada, objetiva e entusiasmada.
 
@@ -86,18 +57,21 @@ O Artur é um profissional da área de tecnologia com transição sólida de Sup
 5. Se o usuário perguntar algo pessoal que não esteja no currículo, responda com polidez: "Não tenho acesso a essa informação, mas recomendo que você pergunte diretamente ao Artur pelo LinkedIn ou WhatsApp."
 6. **Adaptação de Idioma:** Responda SEMPRE no mesmo idioma em que a mensagem do visitante foi enviada. Por exemplo: se a pergunta for feita em inglês, responda em inglês baseando-se nas informações acima; se for em espanhol, responda em espanhol, e assim por diante.`;
 
-    const result = await streamText({
-      model: google('gemini-2.5-flash'), // Faturamento ativo, rodando na via expressa!
+    const result = streamText({
+      model: google('gemini-2.5-flash'),
       messages: formattedMessages,
       system: systemPrompt,
-      maxOutputTokens: 800, // Limita o tamanho (e o custo) de cada resposta
+      maxOutputTokens: 800,
+      maxRetries: 0,
+      abortSignal: AbortSignal.any([req.signal, AbortSignal.timeout(30_000)]),
     });
-
-    // 🟢 O SEGREDO: Enviamos um streaming de TEXTO PURO, sem as formatações da Vercel
-    return result.toTextStreamResponse();
-
+    return result.toTextStreamResponse({ headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    console.error('Erro no servidor:', error);
-    return new Response('Erro', { status: 500 });
+    if (error instanceof ChatRequestError) {
+      return Response.json({ error: error.message }, { status: error.status });
+    }
+    // Do not log provider payloads, credentials or visitor messages.
+    console.error('Chat temporarily unavailable');
+    return Response.json({ error: 'chat_unavailable' }, { status: 503 });
   }
 }

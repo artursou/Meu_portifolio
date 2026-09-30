@@ -17,6 +17,17 @@ import {
 
 const MAX_MESSAGES = 10;
 const MAX_CHARS_PER_MESSAGE = 1000;
+const MAX_ASSISTANT_CHARS = 4000;
+
+// Só envia o que veio da conversa real: sem avisos locais nem bolhas vazias,
+// e respostas da IA dentro do limite aceito pela API.
+const toApiHistory = (msgs: ChatMessage[]) =>
+  msgs
+    .filter(m => !m.local && m.content.trim())
+    .map(({ role, content }) => ({
+      role,
+      content: role === 'assistant' ? content.slice(0, MAX_ASSISTANT_CHARS) : content,
+    }));
 
 export function Chat() {
   const { t } = useTranslation();
@@ -43,11 +54,11 @@ export function Chat() {
       const resposta = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: historicoAtualizado.map(({ role, content }) => ({ role, content })) }),
+        body: JSON.stringify({ messages: toApiHistory(historicoAtualizado) }),
       });
 
       if (resposta.status === 429) {
-        setMensagens(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: t('chat_rate_limited') }]);
+        setMensagens(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: t('chat_rate_limited'), local: true }]);
         return;
       }
 
@@ -76,7 +87,7 @@ export function Chat() {
       }
     } catch (erro) {
       console.error("🔴 Erro de Conexão:", erro);
-      setMensagens(prev => [...prev, { id: Date.now() + 2, role: 'assistant', content: t('chat_error') }]);
+      setMensagens(prev => [...prev, { id: Date.now() + 2, role: 'assistant', content: t('chat_error'), local: true }]);
     } finally {
       setIsLoading(false);
     }
