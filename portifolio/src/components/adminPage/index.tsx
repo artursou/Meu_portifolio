@@ -64,11 +64,6 @@ export const AdminPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 1. Carregar Dados Iniciais
-  useEffect(() => {
-    fetchTechnologies();
-    fetchProjects();
-  }, []);
-
   const fetchTechnologies = async () => {
     const { data, error } = await supabase.from("technologies").select("id, name, category");
     if (error) setErrorMessage(`Erro ao carregar tecnologias: ${error.message}`);
@@ -80,6 +75,13 @@ export const AdminPage = () => {
     if (error) setErrorMessage(`Erro ao carregar projetos: ${error.message}`);
     else if (data) setProjectsList(data as Project[]);
   };
+
+  useEffect(() => {
+    // Busca inicial (o setState acontece depois da resposta do banco)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTechnologies();
+    fetchProjects();
+  }, []);
 
   // 2. Logout
   const handleLogout = async () => {

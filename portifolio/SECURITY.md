@@ -11,9 +11,12 @@ administrador nas três tabelas. Operações de teste executadas em transações
 com ROLLBACK. Foram preservados 6 projetos, 10 tecnologias e 15 vínculos.
 O token de gerenciamento não foi salvo no projeto.
 
-A configuração de Redis e a publicação na Netlify continuam pendentes.
-As instruções de Supabase abaixo servem para novos ambientes: não execute
-a migração novamente neste projeto, pois ela já foi aplicada.
+Estado em 01/10/2026: as três migrações de `supabase/migrations/` estão
+aplicadas no projeto real; Redis (Upstash), CHAT_PLATFORM, GEMINI_API_KEY e
+SUPABASE_SERVICE_ROLE_KEY estão configurados na Netlify; chat, rate limit,
+contador de visitas e cabeçalhos de segurança foram verificados em produção.
+As instruções abaixo servem para novos ambientes: não execute a migração de
+admin novamente neste projeto.
 
 ## Supabase: executar antes de publicar o novo painel
 
