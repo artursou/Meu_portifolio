@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { parseLocalized } from "@/lib/localize";
 import type { Project, Technology } from "@/types";
+import { VisitsPanel } from "@/components/visitsPanel";
 import {
   Container,
   Header,
@@ -246,7 +247,13 @@ export const AdminPage = () => {
         <Tab $active={activeTab === "manage"} onClick={() => setActiveTab("manage")}>
           📋 Gerenciar Projetos
         </Tab>
+        <Tab $active={activeTab === "visits"} onClick={() => setActiveTab("visits")}>
+          📊 Visitas
+        </Tab>
       </TabsContainer>
+
+      {/* ABA: VISITAS */}
+      {activeTab === "visits" && <VisitsPanel onError={setErrorMessage} />}
 
       {/* ABA: ADICIONAR / EDITAR PROJETO */}
       {activeTab === "addProject" && (

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
+import { hasRedis, isLocalEnv, redisCommand } from '@/lib/redis';
 
 type LimitResult = { allowed: boolean; retryAfter: number };
 const HOUR = 3600;
@@ -50,25 +51,12 @@ function localLimit(key: string): LimitResult {
 export async function rateLimit(req: Request): Promise<LimitResult> {
   const ip = getClientIp(req);
   const key = createHash('sha256').update(ip).digest('hex');
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') return localLimit(key);
+  if (!hasRedis()) {
+    if (isLocalEnv()) return localLimit(key);
     throw new Error('Shared rate limiter is not configured');
   }
-  if (new URL(url).protocol !== 'https:') throw new Error('Redis must use HTTPS');
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify(['EVAL', RATE_LIMIT_SCRIPT, '2', '{portfolio-chat}:ip:' + key,
-      '{portfolio-chat}:global', '20', String(HOUR), '200', String(DAY)]),
-    signal: AbortSignal.timeout(3000),
-    cache: 'no-store',
-    redirect: 'error',
-  });
-  if (!response.ok) throw new Error('Shared rate limiter unavailable');
-  const data: unknown = await response.json();
-  const result = data && typeof data === 'object' && 'result' in data ? data.result : undefined;
+  const result = await redisCommand(['EVAL', RATE_LIMIT_SCRIPT, '2', '{portfolio-chat}:ip:' + key,
+    '{portfolio-chat}:global', '20', String(HOUR), '200', String(DAY)]);
   if (!Array.isArray(result) || result.length !== 2 ||
       (result[0] !== 0 && result[0] !== 1) || !Number.isInteger(result[1]) || result[1] < 0) {
     throw new Error('Invalid rate limiter response');

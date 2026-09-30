@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 // 1. IMPORTANDO O CHAT (ajuste o caminho se sua pasta estiver em outro lugar)
-import { Chat } from "@/components/chat"; 
+import { Chat } from "@/components/chat";
+import { VisitTracker } from "@/components/visitTracker";
 
 export const viewport = {
   width: 'device-width',
@@ -51,7 +52,10 @@ export default function RootLayout({
         
         {/* 2. O COMPONENTE DO CHAT VEM AQUI */}
         <Chat />
-        
+
+        {/* Contador de visitas (grava só data e hora) */}
+        <VisitTracker />
+
       </body>
     </html>
   );

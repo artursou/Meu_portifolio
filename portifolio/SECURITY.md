@@ -75,6 +75,28 @@ da IA reenviadas no histórico, 4.000; são aceitas até 10.
 Campos extras são rejeitados. O Gemini tem 800 tokens de saída, sem retries
 automáticos, com cancelamento após 30 segundos ou desconexão.
 
+## Contador de visitas (aba Visitas do admin)
+
+1. No SQL Editor do Supabase, execute uma vez
+   `supabase/migrations/202610010001_site_visits.sql` (depende da migração de
+   admin acima). Ela pode ser executada de novo sem efeito colateral.
+2. Na Netlify, adicione `SUPABASE_SERVICE_ROLE_KEY` (Supabase > Project Settings >
+   API Keys: a chave secreta / service_role), com escopo Functions e marcada como
+   secret. Nunca use prefixo NEXT_PUBLIC: essa chave ignora o RLS.
+
+O banco guarda apenas data e hora de cada visita, sem prazo de exclusão.
+Nenhum IP, navegador ou localização é gravado. Para contar cada visitante uma
+vez por dia (fuso de Palmas, UTC-3), o servidor guarda no Redis um HMAC do IP,
+com o token do Redis como chave, que expira sozinho em 48 horas.
+
+A tabela site_visits não aceita leitura nem escrita pela API pública: só o
+administrador lê (mesma função is_portfolio_admin) e só o servidor grava, via
+função record_site_visit, executável apenas por service_role. A rota /api/track
+recusa requisições sem Origin do próprio site, tem limite de rajada de 10 por
+minuto (netlify/edge-functions/track-guard.js) e, em produção, não grava nada
+sem Redis. Visitas do administrador logado e das páginas /admin e /login não
+são contadas. Pessoas na mesma rede (mesmo IP) contam como um visitante por dia.
+
 ## Verificação
 
 Use Node.js 24. Execute:
