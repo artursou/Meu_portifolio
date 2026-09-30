@@ -2,6 +2,7 @@ import { streamText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { rateLimit } from '@/lib/rateLimit';
 import { ChatRequestError, readChatMessages } from '@/lib/chatRequest';
+import { recordChatUsage } from '@/lib/chatUsage';
 
 export const runtime = 'nodejs';
 
@@ -57,6 +58,8 @@ O Artur é um profissional da área de tecnologia com transição sólida de Sup
 5. Se o usuário perguntar algo pessoal que não esteja no currículo, responda com polidez: "Não tenho acesso a essa informação, mas recomendo que você pergunte diretamente ao Artur pelo LinkedIn ou WhatsApp."
 6. **Adaptação de Idioma:** Responda SEMPRE no mesmo idioma em que a mensagem do visitante foi enviada. Por exemplo: se a pergunta for feita em inglês, responda em inglês baseando-se nas informações acima; se for em espanhol, responda em espanhol, e assim por diante.`;
 
+    const startedAt = Date.now();
+    const usageBase = () => ({ durationMs: Date.now() - startedAt, messageCount: formattedMessages.length });
     const result = streamText({
       model: google('gemini-2.5-flash'),
       messages: formattedMessages,
@@ -64,6 +67,18 @@ O Artur é um profissional da área de tecnologia com transição sólida de Sup
       maxOutputTokens: 800,
       maxRetries: 0,
       abortSignal: AbortSignal.any([req.signal, AbortSignal.timeout(30_000)]),
+      // Awaited before the stream closes, so the log is written before the function ends.
+      onFinish: ({ totalUsage, finishReason }) => recordChatUsage({
+        ...usageBase(),
+        status: 'ok',
+        finishReason,
+        inputTokens: totalUsage.inputTokens,
+        outputTokens: totalUsage.outputTokens,
+        reasoningTokens: totalUsage.outputTokenDetails?.reasoningTokens,
+        totalTokens: totalUsage.totalTokens,
+      }),
+      onError: () => recordChatUsage({ ...usageBase(), status: 'error' }),
+      onAbort: () => recordChatUsage({ ...usageBase(), status: 'aborted' }),
     });
     return result.toTextStreamResponse({ headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {

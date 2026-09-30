@@ -7,6 +7,7 @@ import { parseLocalized } from "@/lib/localize";
 import type { Project, Technology } from "@/types";
 import { VisitsPanel } from "@/components/visitsPanel";
 import { AccountPanel } from "@/components/accountPanel";
+import { ChatUsagePanel } from "@/components/chatUsagePanel";
 import {
   Container,
   Header,
@@ -253,10 +254,16 @@ export const AdminPage = () => {
         <Tab $active={activeTab === "visits"} onClick={() => setActiveTab("visits")}>
           📊 Visitas
         </Tab>
+        <Tab $active={activeTab === "chatUsage"} onClick={() => setActiveTab("chatUsage")}>
+          🤖 Uso do Chat
+        </Tab>
         <Tab $active={activeTab === "account"} onClick={() => setActiveTab("account")}>
           🔒 Minha conta
         </Tab>
       </TabsContainer>
+
+      {/* ABA: USO DO CHAT */}
+      {activeTab === "chatUsage" && <ChatUsagePanel onError={setErrorMessage} />}
 
       {/* ABA: MINHA CONTA */}
       {activeTab === "account" && (

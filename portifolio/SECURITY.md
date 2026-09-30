@@ -124,6 +124,18 @@ minuto (netlify/edge-functions/track-guard.js) e, em produção, não grava nada
 sem Redis. Visitas do administrador logado e das páginas /admin e /login não
 são contadas. Pessoas na mesma rede (mesmo IP) contam como um visitante por dia.
 
+## Uso do chat (aba Uso do Chat do admin)
+
+`supabase/migrations/202610010003_chat_usage.sql` (aplicada em 01/10/2026)
+cria public.chat_usage: uma linha por resposta da IA com data e hora, tokens
+de entrada, saída e raciocínio (a saída do Gemini já inclui o raciocínio),
+total, duração, número de mensagens e status (ok, error, aborted). O texto
+das conversas nunca é gravado. Sem prazo de exclusão.
+
+Mesmo modelo de acesso das visitas: só o administrador lê; só o servidor grava
+via record_chat_usage (apenas service_role), no onFinish/onError/onAbort do
+streamText. Falhas ao gravar o log nunca interrompem o chat.
+
 ## Verificação
 
 Use Node.js 24. Execute:
