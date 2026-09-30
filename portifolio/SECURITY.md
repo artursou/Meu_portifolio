@@ -75,6 +75,27 @@ da IA reenviadas no histórico, 4.000; são aceitas até 10.
 Campos extras são rejeitados. O Gemini tem 800 tokens de saída, sem retries
 automáticos, com cancelamento após 30 segundos ou desconexão.
 
+## Limpeza de políticas antigas e cabeçalhos
+
+`supabase/migrations/202610010002_cleanup_legacy_policies.sql` (aplicada em
+01/10/2026 no projeto real) remove as políticas anteriores à lista de admins
+("Policy with security definer functions", que liberava escrita a qualquer
+usuário logado, e as leituras duplicadas search/Search_tecs/Search_tecs2) e fixa
+o search_path de update_updated_at_column. O acesso foi verificado antes e
+depois, sem mudança: leitura pública, escrita só do administrador.
+
+O site_url do Supabase Auth aponta para https://arturport.netlify.app.
+
+`next.config.ts` envia em todas as rotas: CSP com frame-ancestors 'none',
+base-uri, object-src e form-action restritos; X-Frame-Options DENY (contra
+clickjacking no /admin); Referrer-Policy; Permissions-Policy; e remove o
+X-Powered-By. A CSP não restringe scripts: isso exigiria nonce e renderização
+dinâmica de todas as páginas.
+
+Alertas do Supabase aceitos: is_portfolio_admin é executável por usuários
+logados (o painel precisa dela; só responde sobre o próprio usuário) e
+portfolio_private.admins não tem políticas (ninguém acessa pela API).
+
 ## Contador de visitas (aba Visitas do admin)
 
 1. No SQL Editor do Supabase, execute uma vez
