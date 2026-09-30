@@ -29,6 +29,24 @@ const toApiHistory = (msgs: ChatMessage[]) =>
       content: role === 'assistant' ? content.slice(0, MAX_ASSISTANT_CHARS) : content,
     }));
 
+// Transforma URLs http(s) e e-mails do texto em links. Gera elementos React,
+// nunca HTML, então nada que a IA escreva é interpretado como código.
+const LINK_PATTERN = /(https?:\/\/[^\s<>"']+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
+
+function linkify(text: string) {
+  return text.split(LINK_PATTERN).map((part, i) => {
+    if (i % 2 === 0) return part;
+    // Pontuação no fim ("...github.com/artursou.") fica fora do link
+    const [, link, trailing] = part.match(/^(.*?)([.,;:!?)]*)$/) ?? [part, part, ''];
+    const href = link.includes('@') && !link.startsWith('http') ? `mailto:${link}` : link;
+    return (
+      <React.Fragment key={i}>
+        <a href={href} target="_blank" rel="noopener noreferrer">{link}</a>{trailing}
+      </React.Fragment>
+    );
+  });
+}
+
 export function Chat() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -110,7 +128,7 @@ export function Chat() {
 
             {mensagens.map((m) => (
               <MessageBubble key={m.id} $isUser={m.role === 'user'}>
-                {m.content}
+                {m.role === 'assistant' ? linkify(m.content) : m.content}
               </MessageBubble>
             ))}
 

@@ -67,6 +67,13 @@ export const MessageBubble = styled.div<{ $isUser: boolean }>`
   font-size: 14px;
   line-height: 1.4;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  white-space: pre-wrap; /* mantém as quebras de linha das respostas */
+  overflow-wrap: anywhere; /* URLs longas não estouram a bolha */
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
 `;
 
 export const InputArea = styled.form`
